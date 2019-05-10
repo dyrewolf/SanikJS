@@ -6,10 +6,10 @@ var image = document.getElementById('source');
 var x = canvas.width/2;
 var y = canvas.height-100;
 var dx = 0
-var dy = -1
+var dy = 0
 var ddx = 0;
 var ddy = .5;
-var ballRadius = 10;
+var ballRadius = 15;
 var mySound;
 var delayInMilliseconds = 250; //1 second
 var tired = false;
@@ -74,18 +74,26 @@ function drawBall() {
   ctx.closePath();
 }
 
-function drawShrek() {
-    ctx.drawImage(image, paddleX-55, 250, 200, 150);
+function drawLaser() {
+  ctx.beginPath();
+  ctx.arc(x, y, 2, 0, Math.PI*2);
+  ctx.fillStyle = "red";
+  ctx.fill();
+  ctx.closePath();
+}
+
+function drawSanik() {
+    ctx.drawImage(image, x-50, y-50, 100, 100);
 }
 
 function drawPaddle() {
   ctx.beginPath();
-  ctx.rect(paddleX-10, paddleY+90, paddleWidth, paddleHeight);
+  ctx.rect(paddleX-10, paddleY-10, paddleWidth, paddleHeight);
   ctx.fillStyle = "black";
   ctx.fill();
   ctx.closePath();
   ctx.beginPath();
-  ctx.rect(paddleX-10+paddleWidth/2, paddleY+90-paddleWidth/2, paddleHeight, paddleWidth);
+  ctx.rect(paddleX-10+paddleWidth/2, paddleY-10-paddleWidth/2, paddleHeight, paddleWidth);
   ctx.fillStyle = "black";
   ctx.fill();
   ctx.closePath();
@@ -115,7 +123,9 @@ function draw() {
   ctx.clearRect(0,0, canvas.width, canvas.height);
   drawBall();
   drawLives();
+  drawLaser();
   drawPaddle();
+  drawSanik();
   drawScore();
   drawBricks();
   collisionDetection();
@@ -123,25 +133,26 @@ function draw() {
   y += dy;
   dx += ddx;  //Sideways Gravity (DEFAULT ZERO)
   dy += ddy;  //Gravity Y-Direction
-  dx = dx*0.95;  //Controls Drag
+  dx = dx*0.93;  //Controls Horizontal Drag
+  dy = dy*0.98   //Controls Verticle Drag
   if(x + dx > canvas.width-ballRadius*0.5 || x + dx < ballRadius*0.5) {
     dx = -dx;
   }
   if(y + dy < ballRadius) {
   dy = -dy;
-} else if(y + dy > canvas.height-ballRadius*.8) {
-    dy = -dy*0.3;  //Controls Bounce Amount
+} else if(y + dy > canvas.height-ballRadius*3.5) {  //Resting Height on Floor
+    dy = -dy*0.1;  //Controls Bounce Amount
   }
 
   if(rightPressed && x < canvas.width - ballRadius) {
-    dx += 1;
+    dx += 1.5;           // MOVE SPEED
   }
   else if(leftPressed && x > ballRadius) {
-    dx -= 1;
+    dx -= 1.5;            // MOVE SPEED
   }
   if(spacePressed) {
-    if(tired == false && y > canvas.height-30)
-    dy = -20;
+    if(tired == false && y > canvas.height-60)
+    dy = -13;            // JUMP VELOCITY
     tired = true
     setTimeout(function() {
       tired = false
@@ -205,16 +216,16 @@ function drawLives() {
   document.addEventListener("keydown", keyDownHandler, false);
   document.addEventListener("keyup", keyUpHandler, false);
   document.addEventListener("mousemove", mouseMoveHandler, false);
+  document.addEventListener("click", drawLaser, false);
 
   function mouseMoveHandler(e) {
       var relativeX = e.clientX - canvas.offsetLeft;
       if(relativeX > 0 && relativeX < canvas.width) {
           paddleX = relativeX - paddleWidth/2;
       }
-      var relativeY = e.clientY - canvas.offsetLeft;
-      if(relativeY > 0 && relativeY < canvas.height) {
+      var relativeY = e.clientY;
           paddleY = relativeY - paddleWidth/2;
-      }
+
   }
 
 function keyDownHandler(e) {
